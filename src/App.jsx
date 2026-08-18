@@ -8,6 +8,8 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import toast, { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import InstallPrompt from "./components/pwa/InstallPrompt.jsx";
+import PWAUpdatePrompt from "./components/pwa/PWAUpdatePrompt.jsx";
 
 import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
@@ -23,6 +25,7 @@ import PaymentOptions from "./features/payment/PaymentOptions.jsx";
 import PaystackCallback from "./pages/PaystackCallback.jsx";
 import Wallet from "./features/wallet/Wallet.jsx";
 import WalletCallback from "./pages/WalletCallback.jsx";
+import Referral from "./features/referral/Referral.jsx";
 import VehiclePaper from "./features/licenses/VehiclePaper.jsx";
 import ConfirmRequest from "./components/shared/ConfirmRequest.jsx";
 import DriversLicense from "./features/licenses/driverslicense/DriversLicense.jsx";
@@ -42,6 +45,7 @@ import ScrollToTop from "./components/scrollToTop.jsx";
 import AddCarRoute from "./components/AddCarRoute";
 import useModalStore from "./store/modalStore.js";
 import { authStorage } from "./utils/authStorage.js";
+import { captureReferralCodeFromUrl } from "./services/apiReferral.js";
 import CarDetailsModal from "./components/CarDetailsModal.jsx";
 import CartPage from "./features/ladipo/CartPage.jsx";
 import Ladipo from "./features/ladipo/Ladipo.jsx";
@@ -66,6 +70,13 @@ import GuestRenewalReceipt from "./pages/GuestRenewalReceipt.jsx";
 import BlogPage from "./pages/BlogPage.jsx";
 import BlogsPage from "./pages/Blogs.jsx";
 import BlogLayout from "./components/BlogLayout.jsx";
+import MarketingLayout from "./components/MarketingLayout.jsx";
+import About from "./pages/About.jsx";
+import Contact from "./pages/Contact.jsx";
+import HowItWorks from "./pages/HowItWorks.jsx";
+import DriverGuides from "./pages/DriverGuides.jsx";
+import LicenseReminder from "./pages/LicenseReminder.jsx";
+import RenewVehicleLicence from "./pages/RenewVehicleLicence.jsx";
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
@@ -135,6 +146,8 @@ function processOAuthHash() {
 
 // Run immediately — if this returns true we're mid-redirect, skip rendering
 const isProcessingOAuth = processOAuthHash();
+// Persist ?ref= across landing → signup navigation
+captureReferralCodeFromUrl();
 
 export default function App() {
   const { isOpen } = useModalStore();
@@ -163,6 +176,14 @@ export default function App() {
           {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
           <Route path="/" element={<LandingPage />} />
 
+          <Route element={<MarketingLayout />}>
+            <Route path="about" element={<About />} />
+            <Route path="contact" element={<Contact />} />
+            <Route path="how-it-works" element={<HowItWorks />} />
+            <Route path="guides" element={<DriverGuides />} />
+            <Route path="reminders" element={<LicenseReminder />} />
+            <Route path="renew-vehicle-licence" element={<RenewVehicleLicence />} />
+          </Route>
 
           {/* Auth Routes */}
           <Route element={<BlogLayout />} >
@@ -259,6 +280,7 @@ export default function App() {
             <Route path="garage" element={<Garage />} />
             <Route path="wallet" element={<Wallet />} />
             <Route path="wallet/callback" element={<WalletCallback />} />
+            <Route path="referral" element={<Referral />} />
             <Route path="traffic-rules" element={<TrafficRules />} />
             <Route
               path="payment"
@@ -296,6 +318,10 @@ export default function App() {
           <Route path="*" element={<NotFound404 />} />
         </Routes>
       </BrowserRouter>
+      {/* PWA: install nudge and the update-available toast. Both self-hide when
+          irrelevant (already installed, dismissed, or no new build waiting). */}
+      <InstallPrompt />
+      <PWAUpdatePrompt />
       <Toaster
         position="top-right"
         gutter={8}
