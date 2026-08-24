@@ -133,10 +133,12 @@ function ContactLinks({ email, phone }) {
 }
 
 const AdminRenewals = () => {
-  // Dashboard tiles deep-link in as /admin/renewals?bucket=week
+  // Dashboard tiles deep-link in as /admin/renewals?bucket=week or ?month=2026-08
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useState(searchParams.get('bucket') || 'expired');
+  const initialMonth = /^\d{4}-\d{2}$/.test(searchParams.get('month') || '') ? searchParams.get('month') : null;
+  const [tab, setTab] = useState(initialMonth ? `month:${initialMonth}` : (searchParams.get('bucket') || 'expired'));
   const [buckets, setBuckets] = useState([]);
+  const [monthlyBreakdown, setMonthlyBreakdown] = useState([]);
   const [rows, setRows] = useState([]);
   const [deferredCount, setDeferredCount] = useState(null);
   const [pagination, setPagination] = useState({ total: 0, page: 1, total_pages: 1 });
@@ -144,6 +146,8 @@ const AdminRenewals = () => {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [loading, setLoading] = useState(true);
+
+  const activeMonth = tab.startsWith('month:') ? tab.slice(6) : null;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -153,10 +157,17 @@ const AdminRenewals = () => {
         setRows(data.data || []);
         setPagination(data.pagination || { total: 0, page: 1, total_pages: 1 });
         setDeferredCount(data.pagination?.total ?? 0);
+      } else if (activeMonth) {
+        const data = await listRenewals({ month: activeMonth, page, limit: 25, search: search || undefined });
+        setRows(data.data || []);
+        setBuckets(data.buckets || []);
+        setMonthlyBreakdown(data.monthlyBreakdown || []);
+        setPagination(data.pagination || { total: 0, page: 1, total_pages: 1 });
       } else {
         const data = await listRenewals({ bucket: tab, page, limit: 25, search: search || undefined });
         setRows(data.data || []);
         setBuckets(data.buckets || []);
+        setMonthlyBreakdown(data.monthlyBreakdown || []);
         setPagination(data.pagination || { total: 0, page: 1, total_pages: 1 });
       }
     } catch (err) {
@@ -165,7 +176,7 @@ const AdminRenewals = () => {
     } finally {
       setLoading(false);
     }
-  }, [tab, page, search]);
+  }, [tab, page, search, activeMonth]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -176,12 +187,31 @@ const AdminRenewals = () => {
       .catch(() => {});
   }, []);
 
+  // Keep tab in sync when navigating via dashboard month tile (query param changes)
+  useEffect(() => {
+    const m = searchParams.get('month');
+    if (/^\d{4}-\d{2}$/.test(m || '')) {
+      const key = `month:${m}`;
+      if (tab !== key) { setTab(key); setPage(1); }
+    } else if (tab.startsWith('month:') && !m) {
+      // month was cleared via back navigation
+      setTab('expired');
+      setPage(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   const switchTab = (key) => {
     setTab(key);
     setPage(1);
-    // Keep the URL shareable so an admin can send a colleague a specific bucket
-    setSearchParams(key === DEFERRED_TAB ? {} : { bucket: key }, { replace: true });
+    if (key.startsWith('month:')) {
+      setSearchParams({ month: key.slice(6) }, { replace: true });
+    } else {
+      setSearchParams(key === DEFERRED_TAB ? {} : { bucket: key }, { replace: true });
+    }
   };
+  const switchMonth = (monthKey) => switchTab(`month:${monthKey}`);
+  const clearMonthFilter = () => switchTab('expired');
 
   const submitSearch = (e) => {
     e.preventDefault();
@@ -247,6 +277,55 @@ const AdminRenewals = () => {
           </span>
         </button>
       </div>
+
+      {/* Calendar-month picker — answers "how many due in August?" */}
+      {!isDeferred && monthlyBreakdown.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <h3 className="text-sm font-semibold text-gray-900">Or pick a calendar month</h3>
+            {activeMonth && (
+              <button type="button" onClick={clearMonthFilter} className="text-xs font-medium text-blue-600 hover:underline">
+                Clear filter — back to urgency
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+            {(() => {
+              const map = new Map(monthlyBreakdown.map(m => [m.month, m]));
+              const tiles = [];
+              const d = new Date();
+              for (let i = 0; i < 12; i++) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const key = `${y}-${m}`;
+                const found = map.get(key);
+                const label = new Date(Date.UTC(y, d.getMonth(), 1)).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+                const count = found?.count ?? 0;
+                const isActive = activeMonth === key;
+                tiles.push(
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => switchMonth(key)}
+                    className={`rounded-lg border p-2.5 text-center transition-colors ${isActive ? 'bg-blue-600 text-white border-blue-600' : count > 0 ? 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-200' : 'bg-gray-50 border-gray-100'}`}
+                  >
+                    <p className={`text-xs font-medium ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{label}</p>
+                    <p className={`text-lg font-bold ${isActive ? 'text-white' : count > 0 ? 'text-gray-900' : 'text-gray-400'}`}>{count}</p>
+                  </button>
+                );
+                d.setMonth(d.getMonth() + 1);
+              }
+              return tiles;
+            })()}
+          </div>
+          {activeMonth && (
+            <p className="mt-3 text-xs text-gray-600">
+              Showing <strong>{pagination.total}</strong> vehicle{pagination.total === 1 ? '' : 's'} expiring in{' '}
+              <strong>{new Date(activeMonth + '-01T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</strong> — every row below is reachable via email / phone / WhatsApp.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* State the sort in words. A column arrow alone does not tell a non-technical
           user WHICH end is urgent, and "call from the top" is the whole workflow. */}

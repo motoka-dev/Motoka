@@ -39,8 +39,27 @@ const RenewalsSummary = () => {
 
   const counts = data?.counts;
   const states = data?.states;
+  const monthlyBreakdown = data?.monthlyBreakdown || [];
   const needsReview = states?.needs_review ?? 0;
   const inProgress = states?.in_progress ?? 0;
+
+  // Show next 12 months from today, even if count is 0 — gives a stable calendar row
+  const nextMonths = (() => {
+    if (monthlyBreakdown.length === 0) return [];
+    const map = new Map(monthlyBreakdown.map(m => [m.month, m]));
+    const out = [];
+    const d = new Date();
+    for (let i = 0; i < 12; i++) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const key = `${y}-${m}`;
+      const found = map.get(key);
+      const label = new Date(Date.UTC(y, d.getMonth(), 1)).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+      out.push(found || { month: key, label, count: 0 });
+      d.setMonth(d.getMonth() + 1);
+    }
+    return out;
+  })();
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -74,6 +93,29 @@ const RenewalsSummary = () => {
               </Link>
             ))}
           </div>
+
+          {/* Calendar-month drill-down — answers "how many in August?" */}
+          {nextMonths.length > 0 && (
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold text-gray-900">Due by calendar month</h3>
+                <span className="text-xs text-gray-500">Click a month to filter the call list</span>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                {nextMonths.map(m => (
+                  <Link
+                    key={m.month}
+                    to={`/admin/renewals?month=${m.month}`}
+                    className={`rounded-lg border p-3 text-center transition-colors ${m.count > 0 ? 'border-gray-200 hover:bg-blue-50 hover:border-blue-200' : 'border-gray-100 bg-gray-50/50'}`}
+                  >
+                    <p className="text-xs font-medium text-gray-600">{m.label}</p>
+                    <p className={`text-xl font-bold ${m.count > 0 ? 'text-gray-900' : 'text-gray-400'}`}>{m.count}</p>
+                    <p className="text-[11px] text-gray-500">{m.count === 1 ? 'vehicle' : 'vehicles'}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {(needsReview > 0 || inProgress > 0) && (
             <div className="mt-4 rounded-md bg-blue-50 border border-blue-200 px-3 py-2.5">

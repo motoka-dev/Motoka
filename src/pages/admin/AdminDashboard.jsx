@@ -129,16 +129,30 @@ const AdminDashboard = () => {
     }
   };
 
-  // Helper function to format order type
-  const formatOrderType = (orderType) => {
-    switch (orderType) {
-      case 'car_renewal':
-        return 'Car Renewal';
-      case 'driver_license':
-        return 'Driver License';
-      default:
-        return orderType;
+  // Build a human-readable purpose label from order_type + plate/license specifics
+  // Mirrors AdminOrders.jsx:getPurpose so dashboard rows show real service names.
+  const getPurpose = (order) => {
+    const type = order.order_type || order.payment_type || '';
+    if (type === 'plate_number') {
+      const parts = ['Plate Number'];
+      if (order.plate_type) parts.push(order.plate_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+      if (order.plate_sub_type) parts.push(`(${order.plate_sub_type.replace(/_/g, ' ')})`);
+      return parts.join(' — ');
     }
+    if (type === 'driver_license') {
+      const parts = ["Driver's License"];
+      if (order.license_type) parts.push(order.license_type.charAt(0).toUpperCase() + order.license_type.slice(1));
+      if (order.license_duration) parts.push(`(${order.license_duration})`);
+      return parts.join(' — ');
+    }
+    if (type === 'car_renewal' || type === 'renewal_manual' || type === 'renewal_auto') return 'Vehicle Licence Renewal';
+    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'General Service';
+  };
+
+  // Transaction purpose — uses payment_description when available
+  const getTxPurpose = (tx) => {
+    if (tx.payment_description) return tx.payment_description.replace(/\b\w/g, l => l.toUpperCase());
+    return getPurpose(tx);
   };
 
   const getStatusColor = (status) => {
@@ -152,6 +166,31 @@ const AdminDashboard = () => {
       default:
         return 'text-gray-600';
     }
+  };
+
+  // New-badge seen tracking — backend `is_new` (viewed_at IS NULL) is source of truth;
+  // localStorage is optimistic fallback for the current session.
+  const [seenOrderNumbers, setSeenOrderNumbers] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('seenOrders') || '[]')); } catch { return new Set(); }
+  });
+  const isOrderNew = (order) => {
+    if (order.is_new === false) return false;
+    if (order.is_new === true) return !seenOrderNumbers.has(order.order_number || order.slug);
+    // fallback for old API shape without is_new
+    return order.status === 'pending' && !seenOrderNumbers.has(order.order_number || order.slug);
+  };
+  const markSeenLocal = (order) => {
+    const key = order.order_number || order.slug;
+    if (!key || seenOrderNumbers.has(key)) return;
+    const next = new Set(seenOrderNumbers); next.add(key);
+    setSeenOrderNumbers(next);
+    try { localStorage.setItem('seenOrders', JSON.stringify([...next])); } catch {}
+    // fire-and-forget API so badge stays cleared across devices
+    const token = localStorage.getItem('adminToken');
+    fetch(`${config.getApiBaseUrl()}/admin/orders/${key}/viewed`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    }).catch(() => {});
   };
 
   if (loading) {
@@ -233,67 +272,54 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Order Status Cards */}
+      {/* Order Status Metrics — actionable breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Pending Orders */}
-        {/* <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-400">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Pending Orders</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {stats ? stats.pending_orders.toLocaleString() : '0'}
-              </p>
+              <p className="text-sm font-medium text-gray-600">New <span className="text-xs font-normal text-gray-400">(unseen)</span></p>
+              <p className="text-2xl font-bold text-yellow-600">{stats ? (stats.new_orders ?? stats.pending_orders ?? 0).toLocaleString() : '0'}</p>
+              <p className="text-xs text-gray-500 mt-1">₦{stats ? parseFloat(stats.pending_amount || 0).toLocaleString() : '0'} pending</p>
             </div>
             <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
               <span className="text-yellow-600 text-sm font-bold">!</span>
             </div>
           </div>
-        </div> */}
-
-        {/* In Progress Orders */}
-        {/* <div className="bg-white rounded-lg shadow-sm p-6">
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {stats ? stats.in_progress_orders.toLocaleString() : '0'}
-              </p>
+              <p className="text-2xl font-bold text-blue-600">{stats ? (stats.processing_orders ?? 0).toLocaleString() : '0'}</p>
+              <p className="text-xs text-gray-500 mt-1">{stats ? `${stats.pending_orders ?? 0} pending total` : ''}</p>
             </div>
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-blue-600 text-sm font-bold">→</span>
             </div>
           </div>
-        </div> */}
-
-        {/* Completed Orders */}
-        {/* <div className="bg-white rounded-lg shadow-sm p-6">
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {stats ? stats.completed_orders.toLocaleString() : '0'}
-              </p>
+              <p className="text-2xl font-bold text-green-600">{stats ? (stats.completed_orders ?? 0).toLocaleString() : '0'}</p>
             </div>
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-600 text-sm font-bold">✓</span>
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <span className="text-green-600 text-sm font-bold">✓</span>
             </div>
           </div>
-        </div> */}
-
-        {/* Declined Orders */}
-        {/* <div className="bg-white rounded-lg shadow-sm p-6">
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Declined</p>
-              <p className="text-2xl font-bold text-red-600">
-                {stats ? stats.declined_orders.toLocaleString() : '0'}
-              </p>
+              <p className="text-sm font-medium text-gray-600">Cancelled</p>
+              <p className="text-2xl font-bold text-red-600">{stats ? (stats.cancelled_orders ?? 0).toLocaleString() : '0'}</p>
             </div>
             <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
               <span className="text-red-600 text-sm font-bold">✗</span>
             </div>
           </div>
-        </div> */}
+        </div>
       </div>
 
       {/* Renewals — who is expiring and who is already paid up */}
@@ -369,7 +395,7 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        {/* Recent Orders */}
+        {/* Recent Orders — name + service the customer actually asked for */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
@@ -377,23 +403,28 @@ const AdminDashboard = () => {
           </div>
           <div className="space-y-3">
             {recentOrders.length > 0 ? (
-              recentOrders.slice(0, 5).map((order, index) => (
+              recentOrders.slice(0, 5).map((order, index) => {
+                const showNew = isOrderNew(order);
+                return (
                 <div 
-                  key={index} 
+                  key={order.slug || index} 
                   className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => window.location.href = `/admin/orders/${order.slug}`}
+                  onClick={() => { markSeenLocal(order); window.location.href = `/admin/orders/${order.slug}`; }}
                 >
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      #{order.id} {formatOrderType(order.order_type)}
+                  <div className="min-w-0 flex-1 pr-3">
+                    <p className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                      <span className="truncate">{order.user?.name || 'Unknown User'}</span>
+                      {showNew && <span className="inline-flex items-center rounded-full bg-yellow-100 px-1.5 py-0.5 text-[10px] font-bold text-yellow-700 shrink-0">New</span>}
                     </p>
-                    <p className="text-sm text-gray-600">₦{parseFloat(order.amount).toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 truncate" title={getPurpose(order)}>{getPurpose(order)}{order.car?.registration_no ? ` • ${order.car.registration_no}` : ''}</p>
+                    <p className="text-xs font-medium text-gray-700">₦{parseFloat(order.amount ?? order.amount_paid ?? 0).toLocaleString()}</p>
                   </div>
-                  <span className={`text-sm font-medium ${getStatusColor(formatOrderStatus(order.status))}`}>
+                  <span className={`text-xs font-medium shrink-0 ${getStatusColor(formatOrderStatus(order.status))}`}>
                     {formatOrderStatus(order.status)}
                   </span>
                 </div>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-4">
                 <p className="text-gray-500 text-sm">No recent orders</p>
@@ -403,32 +434,32 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Recent Transactions */}
+      {/* Recent Transactions — who paid + for what */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Transaction</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
           <a href="/admin/payments" className="text-blue-600 text-sm font-medium">See More</a>
         </div>
         <div className="space-y-3">
           {recentTransactions.length > 0 ? (
             recentTransactions.map((transaction, index) => (
               <div
-                key={index}
+                key={transaction.gateway_reference || transaction.transaction_id || index}
                 className="flex items-center space-x-3 py-2 px-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                 onClick={() => window.location.href = '/admin/payments'}
               >
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
                   <DocumentTextIcon className="h-4 w-4 text-blue-600" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    {transaction.gateway_reference || transaction.id} {formatOrderType(transaction.payment_type || 'Payment')}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {transaction.user?.name || 'Unknown User'} <span className="text-gray-400 font-normal">• {getTxPurpose(transaction)}</span>
                   </p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(transaction.created_at).toLocaleDateString('en-GB')}
+                  <p className="text-xs text-gray-500 truncate">
+                    {new Date(transaction.created_at).toLocaleDateString('en-GB')} • {transaction.payment_gateway || 'paystack'} • <span className="font-mono text-[11px]">{(transaction.gateway_reference || transaction.transaction_id || '').slice(0, 12)}</span>
                   </p>
                 </div>
-                <p className="text-sm font-medium text-blue-600">
+                <p className="text-sm font-medium text-blue-600 shrink-0">
                   ₦{parseFloat(transaction.amount).toLocaleString()}
                 </p>
               </div>
