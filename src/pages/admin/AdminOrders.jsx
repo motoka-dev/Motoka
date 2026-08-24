@@ -118,10 +118,28 @@ const AdminOrders = () => {
     location: order.state_name ? `${order.state_name}${order.lga_name ? ', ' + order.lga_name : ''}` : (order.order_type === 'plate_number' || order.order_type === 'driver_license' ? '—' : 'Unknown'),
     renewalState: order.renewal_state || null,
     status: order.status,
+    is_new: order.is_new,
+    viewed_at: order.viewed_at,
     originalOrder: order
   }));
 
   const handleViewOrder = (order) => {
+    // Optimistically clear New badge locally + persist via API (fire-and-forget)
+    try {
+      const key = order.originalOrder.order_number || order.originalOrder.slug;
+      const seen = new Set(JSON.parse(localStorage.getItem('seenOrders') || '[]'));
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        localStorage.setItem('seenOrders', JSON.stringify([...seen]));
+      }
+      const token = localStorage.getItem('adminToken');
+      if (key && order.is_new !== false) {
+        fetch(`${config.getApiBaseUrl()}/admin/orders/${key}/viewed`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        }).catch(() => {});
+      }
+    } catch {}
     window.location.href = `/admin/orders/${order.originalOrder.slug}`;
   };
 
@@ -323,8 +341,9 @@ const AdminOrders = () => {
                       ) : '—'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`text-sm font-medium ${STATUS_COLOR[order.status] || 'text-gray-600'}`}>
+                      <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${STATUS_COLOR[order.status] || 'text-gray-600'}`}>
                         {STATUS_LABEL[order.status] || order.status}
+                        {order.is_new && <span className="inline-flex items-center rounded-full bg-yellow-100 px-1.5 py-0.5 text-[10px] font-bold text-yellow-700">New</span>}
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">

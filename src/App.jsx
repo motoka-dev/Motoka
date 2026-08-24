@@ -58,6 +58,9 @@ import LadipoPaystackReturnHandler from "./features/ladipo/LadipoPaystackReturnH
 import CarReceipt from "./pages/CarReceipt.jsx";
 import PaymentReceipt from "./pages/PaymentReceipt.jsx";
 import AdminRoutes from "./routes/AdminRoutes.jsx";
+import DemoAdminLayout from "./components/admin/DemoAdminLayout.jsx";
+import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
+import AdminRenewals from "./pages/admin/AdminRenewals.jsx";
 import CarDocuments from "./pages/CarDocuments.jsx";
 import Notification from "./pages/notification.jsx";
 import SuccessPage from "./pages/SuccessPage.jsx";
@@ -312,6 +315,11 @@ export default function App() {
           <Route path="guest/renewal/callback" element={<GuestRenewalCallback />} />
           <Route path="guest/renewal/receipt" element={<GuestRenewalReceipt />} />
 
+          {/* Demo admin — no login, mock data, for previews */}
+          <Route path="admin/demo" element={<DemoAdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="renewals" element={<AdminRenewals />} />
+          </Route>
           {/* Admin Routes */}
           <Route path="admin/*" element={<AdminRoutes />} />
           {/* Not Found */}
