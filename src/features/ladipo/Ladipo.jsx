@@ -22,6 +22,40 @@ import SelectCarModal from "./components/SelectCarModal";
 import FilterSidebar from "./components/FilterSidebar";
 import ladipoStore from "../../store/ladipoStore";
 
+function normalizeFilterValue(value) {
+  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function normalizeMake(value) {
+  const normalized = normalizeFilterValue(value);
+  if (normalized === "mercedes" || normalized === "benz") return "mercedesbenz";
+  if (normalized === "vw") return "volkswagen";
+  return normalized;
+}
+
+function isCompatibilityMatch(car, rule) {
+  if (!car || !rule) return false;
+  const carMake = normalizeMake(car.vehicle_make);
+  const carModel = normalizeFilterValue(car.vehicle_model);
+  const carYearRaw = car.vehicle_year;
+  const carYear = carYearRaw === undefined || carYearRaw === null || carYearRaw === ""
+    ? null
+    : Number(carYearRaw);
+
+  const ruleMake = normalizeMake(rule.make);
+  const ruleModel = normalizeFilterValue(rule.model);
+
+  if (!ruleMake || carMake !== ruleMake) return false;
+  if (ruleModel && carModel !== ruleModel) return false;
+
+  if (carYear != null && Number.isFinite(carYear)) {
+    if (rule.year_min != null && carYear < Number(rule.year_min)) return false;
+    if (rule.year_max != null && carYear > Number(rule.year_max)) return false;
+  }
+
+  return true;
+}
+
 export default function Ladipo() {
   const [searchParams] = useSearchParams();
   const initialQ = searchParams.get("q") || "";
@@ -69,40 +103,6 @@ export default function Ladipo() {
     sidebarFilters.maxPriceNgn != null ||
     (sidebarFilters.sort && sidebarFilters.sort !== "newest");
   const itemsPerPage = 12; // 3 rows on desktop (4 columns), 6 items on mobile (2 columns)
-
-  function normalizeFilterValue(value) {
-    return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
-  }
-
-  function normalizeMake(value) {
-    const normalized = normalizeFilterValue(value);
-    if (normalized === "mercedes" || normalized === "benz") return "mercedesbenz";
-    if (normalized === "vw") return "volkswagen";
-    return normalized;
-  }
-
-  function isCompatibilityMatch(car, rule) {
-    if (!car || !rule) return false;
-    const carMake = normalizeMake(car.vehicle_make);
-    const carModel = normalizeFilterValue(car.vehicle_model);
-    const carYearRaw = car.vehicle_year;
-    const carYear = carYearRaw === undefined || carYearRaw === null || carYearRaw === ""
-      ? null
-      : Number(carYearRaw);
-
-    const ruleMake = normalizeMake(rule.make);
-    const ruleModel = normalizeFilterValue(rule.model);
-
-    if (!ruleMake || carMake !== ruleMake) return false;
-    if (ruleModel && carModel !== ruleModel) return false;
-
-    if (carYear != null && Number.isFinite(carYear)) {
-      if (rule.year_min != null && carYear < Number(rule.year_min)) return false;
-      if (rule.year_max != null && carYear > Number(rule.year_max)) return false;
-    }
-
-    return true;
-  }
 
   // Get store state and actions
   const {
@@ -236,7 +236,7 @@ export default function Ladipo() {
     staleTime: 60 * 1000,
   });
 
-  const parts = partsData?.parts ?? [];
+  const parts = useMemo(() => partsData?.parts ?? [], [partsData]);
   const visibleParts = useMemo(() => {
     if (!selectedCar) return parts;
     return parts.filter((part) => {

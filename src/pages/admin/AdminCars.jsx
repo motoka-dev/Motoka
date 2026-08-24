@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../../config/supabaseClient';
@@ -45,11 +45,7 @@ const AdminCars = () => {
     { value: 'government', label: 'Government' },
   ];
 
-  useEffect(() => {
-    fetchCars();
-  }, [currentPage, statusFilter, carTypeFilter, searchTerm, sortFilter]);
-
-  const fetchCars = async () => {
+  const fetchCars = useCallback(async () => {
     try {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
@@ -88,7 +84,11 @@ const AdminCars = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, statusFilter, carTypeFilter, searchTerm, sortFilter, navigate]);
+
+  useEffect(() => {
+    fetchCars();
+  }, [fetchCars]);
 
   const STATUS_MAP = {
     active:   { color: 'bg-green-100 text-green-800',  label: 'Registered' },

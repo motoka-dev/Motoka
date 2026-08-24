@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import ladipoStore from "../../../store/ladipoStore";
 
-export default function SubcategoriesNav({ subcategories = [], mainCategory }) {
+export default function SubcategoriesNav({ subcategories = [] }) {
   const { selectedSubcategory, setSelectedSubcategory } = ladipoStore();
   const scrollContainerRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -41,12 +41,24 @@ const AdminOrderDetails = () => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    fetchOrderDetails();
-  }, [slug]);
+  const fetchCarDocuments = useCallback(async (carId) => {
+    if (!carId) return;
+    try {
+      setDocsLoading(true);
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${config.getApiBaseUrl()}/admin/documents?car_id=${carId}&limit=50`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.status) setDocuments(data.data || []);
+    } catch {
+      // non-blocking
+    } finally {
+      setDocsLoading(false);
+    }
+  }, []);
 
-  // Filter agents by order location
-  const fetchOrderDetails = async () => {
+  const fetchOrderDetails = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
@@ -66,24 +78,11 @@ const AdminOrderDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug, fetchCarDocuments]);
 
-  const fetchCarDocuments = async (carId) => {
-    if (!carId) return;
-    try {
-      setDocsLoading(true);
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${config.getApiBaseUrl()}/admin/documents?car_id=${carId}&limit=50`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.status) setDocuments(data.data || []);
-    } catch {
-      // non-blocking
-    } finally {
-      setDocsLoading(false);
-    }
-  };
+  useEffect(() => {
+    fetchOrderDetails();
+  }, [fetchOrderDetails]);
 
   const handleDocumentUpload = async (e) => {
     e.preventDefault();

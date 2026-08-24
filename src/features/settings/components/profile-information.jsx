@@ -28,7 +28,7 @@ export default function ProfileInformation({ onNavigate }) {
       await fetchProfile(true) 
     }
     refreshData()
-  }, [])
+  }, [fetchProfile])
 
   const handleEditClick = () => {
     onNavigate("edit-profile")

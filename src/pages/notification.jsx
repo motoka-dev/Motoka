@@ -334,14 +334,6 @@ export default function Notification() {
     retry: false,
   });
 
-  const hasUnreadNotifications = () => {
-    const source = allData?.data ?? allData;
-    if (!source || typeof source !== "object") return false;
-    return Object.values(source).some(
-      (arr) => Array.isArray(arr) && arr.some((notification) => notification?.is_read === false),
-    );
-  };
-
   const handleMarkAllRead = () => {
     if (!markAllMutation.isLoading) {
       markAllMutation.mutate();

@@ -27,7 +27,7 @@ export function useInitializePayment() {
 export function useVerifyPayment() {
   const { mutate: verifyPayment, isPending: isVerifying, error, data } = useMutation({
     mutationFn: verifyPaymentApi,
-    onError: (error) => {
+    onError: () => {
       // console.error("Payment verification failed:", error);
     }
   });

@@ -11,7 +11,6 @@ import {
 function LicenseDoc({
   selectedDocument,
   setSelectedDocument,
-  showsidebar,
   setShowsidebar,
 }) {
   const fileInputRef = useRef(null);

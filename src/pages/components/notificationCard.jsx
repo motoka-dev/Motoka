@@ -42,7 +42,7 @@
 
 import { Icon } from "@iconify/react";
 
-export default function NotificationCard({ notification, onMarkRead, markReadButtonType = "icon" }) {
+export default function NotificationCard({ notification, onMarkRead }) {
   const { category, message, time, isRead } = notification;
 
   const renderStatus = () => {

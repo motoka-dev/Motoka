@@ -20,7 +20,6 @@ const CAR_DOC_CATEGORIES = [
 function DocumentList({
   selectedDocument,
   setSelectedDocument,
-  showsidebar,
   setShowsidebar,
   car,
 }) {

@@ -111,7 +111,7 @@ export default function PaymentOptions() {
     }
 
     navigate('/dashboard', { state });
-  }, [navigate, queryClient, paymentSession]);
+  }, [navigate, queryClient, paymentSession, clearLadipoCart]);
 
   // Abandon any initialized-but-unpaid transaction when user leaves this page
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function PaymentOptions() {
         abandonPayment(ref, 'User left payment page');
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [paymentSession, isPaymentMethodConfirmed, isProcessing]);
 
   useEffect(() => {
@@ -332,7 +332,9 @@ export default function PaymentOptions() {
                 },
                 amount: result.amount || prev?.amount,
               };
-              try { sessionStorage.setItem("paymentData", JSON.stringify(updated)); } catch {}
+              try { sessionStorage.setItem("paymentData", JSON.stringify(updated)); } catch {
+                // sessionStorage unavailable — session simply won't survive refresh
+              }
               return updated;
             });
             setIsPaymentMethodConfirmed(true);
@@ -359,7 +361,9 @@ export default function PaymentOptions() {
                   },
                 },
               };
-              try { sessionStorage.setItem("paymentData", JSON.stringify(updated)); } catch {}
+              try { sessionStorage.setItem("paymentData", JSON.stringify(updated)); } catch {
+                // sessionStorage unavailable — session simply won't survive refresh
+              }
               return updated;
             });
             setIsPaymentMethodConfirmed(true);
@@ -782,7 +786,7 @@ export default function PaymentOptions() {
   };
 
   // Handle Paystack verification
-  const handleVerifyPaystack = async () => {
+  const _handleVerifyPaystack = async () => {
     const reference = paymentSession?.paystack?.reference;
     if (!reference) {
       toast.error("No payment reference found");
@@ -811,7 +815,7 @@ export default function PaymentOptions() {
         toast.error("Payment verification failed");
         setIsProcessing(false);
       }
-    } catch (error) {
+    } catch {
       setIsProcessing(false);
     }
   };
@@ -1138,153 +1142,6 @@ export default function PaymentOptions() {
             </div>
           )}
 
-          {selectedMethod === "card" && (
-            <div>
-              <h2 className="mb-5 text-sm font-normal text-[#697C8C]">
-                Card Method
-              </h2>
-              <div className="space-y-3 rounded-[20px] border border-[#697B8C]/11 px-6 py-2">
-                <div className="text-center">
-                  <span className="text-sm font-normal text-[#05243F]/40">
-                    Amount
-                  </span>
-                  <p className="mt-1 text-4xl font-semibold text-[#2284DB]">
-                    N35,000
-                  </p>
-                  <p className="mt-2 text-[15px] text-[#05243F]/40">
-                    Kindly Input your Card Details
-                  </p>
-                </div>
-
-                <div className="mt-5 space-y-3">
-                  <h3 className="text-sm font-medium text-[#05243F]">
-                    Input Card Details
-                  </h3>
-
-                  {/* Card Number Input */}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={cardNumber}
-                      onChange={handleCardNumberChange}
-                      placeholder="0000-0000-0000-0000"
-                      className="w-full rounded-[10px] border border-[#E1E6F4] bg-[#F8F8F8] py-3 pr-4 pl-12 text-right text-base text-[#05243F] placeholder-[#05243F]/40 focus:border-[#2389E3] focus:ring-1 focus:ring-[#2389E3] focus:outline-none"
-                    />
-                    {cardLogo && (
-                      <div className="absolute top-1/2 left-4 flex -translate-y-1/2 items-center justify-center">
-                        <img
-                          src={cardLogo}
-                          alt={cardType || "card"}
-                          className="h-6 w-auto object-contain"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Month/Year and CVV */}
-                  {/* TODO: Let add min and max value and error input invalidation */}
-                  {/* <div className="grid grid-cols-2 gap-2"> */}
-                  {/* ...omitted for brevity... */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="number"
-                      placeholder="Month"
-                      value={month}
-                      min={1}
-                      max={12}
-                      onBlur={() =>
-                        setTouched((prev) => ({ ...prev, month: true }))
-                      }
-                      onInput={(e) => {
-                        if (e.target.value.length > 2) {
-                          e.target.value = e.target.value.slice(0, 2);
-                        }
-                      }}
-                      onChange={(e) => setMonth(e.target.value)}
-                      className={`w-full rounded-[10px] border ${touched.month && !isMonthValid
-                        ? "border-red-500"
-                        : "border-[#E1E6F4]"
-                        } bg-[#F8F8F8] px-4 py-3 text-sm text-[#05243F] placeholder-[#05243F]/40 focus:border-[#2389E3] focus:ring-1 focus:ring-[#2389E3] focus:outline-none`}
-                    />
-
-                    <input
-                      type="number"
-                      placeholder="Year"
-                      value={year}
-                      min={currentYear}
-                      max={currentYear + 15}
-                      onBlur={() =>
-                        setTouched((prev) => ({ ...prev, year: true }))
-                      }
-                      onInput={(e) => {
-                        if (e.target.value.length > 4) {
-                          e.target.value = e.target.value.slice(0, 4);
-                        }
-                      }}
-                      onChange={(e) => setYear(e.target.value)}
-                      className={`w-full rounded-[10px] border ${touched.year && !isYearValid
-                        ? "border-red-500"
-                        : "border-[#E1E6F4]"
-                        } bg-[#F8F8F8] px-4 py-3 text-sm text-[#05243F] placeholder-[#05243F]/40 focus:border-[#2389E3] focus:ring-1 focus:ring-[#2389E3] focus:outline-none`}
-                    />
-
-                    <input
-                      type="number"
-                      placeholder="CVV"
-                      value={cvv}
-                      onBlur={() =>
-                        setTouched((prev) => ({ ...prev, cvv: true }))
-                      }
-                      onInput={(e) => {
-                        if (e.target.value.length > 4) {
-                          e.target.value = e.target.value.slice(0, 4);
-                        }
-                      }}
-                      onChange={(e) => setCvv(e.target.value)}
-                      className={`w-full rounded-[10px] border ${touched.cvv && !isCvvValid
-                        ? "border-red-500"
-                        : "border-[#E1E6F4]"
-                        } bg-[#F8F8F8] px-4 py-3 text-sm text-[#05243F] placeholder-[#05243F]/40 focus:border-[#2389E3] focus:ring-1 focus:ring-[#2389E3] focus:outline-none`}
-                    />
-
-                    {/* Auto Renew */}
-                    <div className="flex items-center justify-center gap-x-3 rounded-[10px] bg-[#EEF2FF]">
-                      <input
-                        type="checkbox"
-                        id="autoRenew"
-                        className="h-4 w-4 rounded-full border-[#E1E6F4] text-[#2389E3] focus:ring-[#2389E3]"
-                      />
-                      <label
-                        htmlFor="autoRenew"
-                        className="text-sm text-[#05243F]/40"
-                      >
-                        Auto Renew
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Note */}
-                  <div className="mt-5 rounded-[10px] bg-[#F8F8F8] p-4 drop-shadow-xs">
-                    <div className="flex gap-5">
-                      <span className="text-base font-medium text-[#05243F]">
-                        Note:
-                      </span>
-                      <p className="text-sm text-[#05243F]/60">
-                        Activate Auto renewal to enjoy{" "}
-                        <span className="font-semibold text-[#F26060]">
-                          10%
-                        </span>{" "}
-                        Discount on your next renewal
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button className="mt-5 w-full rounded-full bg-[#2284DB] py-3 text-center text-base font-semibold text-white transition-all hover:bg-[#FDF6E8] hover:text-[#05243F]">
-                Make Payment
-              </button>
-            </div>
-          )}
 
           {selectedMethod === PAYMENT_METHODS.PAYSTACK && (
             <div>

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function LocalGovPaper() {
   const fileInputRef = useRef(null);
+  const affidavitInputRef = useRef(null);
   const [formData, setFormData] = useState({
     vehiclelicense: null,
     affidavit: null,

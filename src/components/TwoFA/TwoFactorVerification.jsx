@@ -62,8 +62,8 @@ export default function TwoFactorVerification({ onVerify, onCancel, isVerifying 
 
     try {
       await onVerify(fullCode);
-    } catch (error) {
-    
+    } catch {
+      // Error handling is owned by the parent component
     }
   };
 

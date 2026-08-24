@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Icon } from "@iconify/react";
 import MercedesLogo from "../assets/images/mercedes-logo.png";
 import AutoModeIcon from "../assets/images/ic_round-auto-mode.png";
 import useModalStore from "../store/modalStore";
-
-const defaultLogo = MercedesLogo;
 
 const formatDate = (dateString) => {
   if (!dateString) return "-";
@@ -124,8 +122,6 @@ export default function CarDetailsCard({
   
   // Extract data from expiry_status
   const reminderMessage = statusStyle.message;
-  const daysRemaining = expiryStatusData?.days_remaining;
-  const expiryStatus = expiryStatusData?.status; // "reminder", "overdue", or "no_reminder"
 
   return (
     <div

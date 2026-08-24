@@ -97,7 +97,6 @@ export async function signupRequest({
   email,
   password,
   password_confirmation,
-  nin: _nin, // Reserved for future KYC
   phone_number,
   referral_code,
 }) {

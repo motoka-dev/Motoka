@@ -28,7 +28,7 @@ export default function PlateDetails() {
   const dropdownRefReprint = useRef(null);
   const [licenseType, setLicenseType] = useState(type);
   const [dealerDropdownOpen, setDealerDropdownOpen] = useState(false);
-  const [reprintDropdownOpen, setReprintDropdownOpen] = useState(false);
+  const [, setReprintDropdownOpen] = useState(false);
   const [dealerShipType, setDealerShipType] = useState("Dealership");
   const [reprintType, setReprintType] = useState("Reprint");
   const [selectedCarSlug, setSelectedCarSlug] = useState("");

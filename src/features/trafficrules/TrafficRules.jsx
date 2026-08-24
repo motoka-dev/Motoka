@@ -11,7 +11,7 @@ export default function TrafficRules() {
     "Licensing&Registration",
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredRules, setFilteredRules] = useState(
+  const [, setFilteredRules] = useState(
     trafficRulesData.drivingConduct,
   );
 

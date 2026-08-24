@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   DocumentTextIcon,
   MagnifyingGlassIcon,
@@ -146,7 +146,7 @@ const AdminDocuments = () => {
     file: null,
   });
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     try {
       setLoading(true);
       const params = {
@@ -164,13 +164,13 @@ const AdminDocuments = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, limit, statusFilter, typeFilter]);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     if (!token) { window.location.href = '/admin/login'; return; }
     fetchDocuments();
-  }, [currentPage, statusFilter, typeFilter]);
+  }, [fetchDocuments]);
 
   // Load cars when a user is selected and type is 'car'
   useEffect(() => {

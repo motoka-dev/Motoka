@@ -46,29 +46,6 @@ export default function OTPLogin() {
     return () => window.removeEventListener('error', handleError);
   }, []);
 
-  let hookData;
-  try {
-    hookData = useOTPLogin();
-  } catch (error) {
-    console.error("Error in useOTPLogin hook:", error);
-    const errorMessage = error?.message || error?.toString() || "An unknown error occurred";
-    setError(errorMessage);
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading OTP Login</h2>
-          <p className="text-gray-600 mb-4">{errorMessage}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-          >
-            Reload Page
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const {
     sendOTP,
     verifyOTP,
@@ -79,9 +56,7 @@ export default function OTPLogin() {
     setStep,
     otpTimer,
     canResend,
-    startTimer,
-  } = hookData;
-
+  } = useOTPLogin();
 
   const {
     register: registerEmail,
@@ -171,8 +146,7 @@ export default function OTPLogin() {
     );
   }
 
-  try {
-    return (
+  return (
       <div className="flex flex-1 items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-8">
       <div className="animate-fadeIn flex max-h-[80vh] w-full max-w-[864px] md:w-[864px] flex-col-reverse justify-between gap-0 overflow-hidden rounded-[20px] bg-white md:flex-row p-4 sm:p-0 sm:px-0">
         <div className="hidden w-full md:block sm:w-1/2 shrink-0 border-r border-[#F2F2F2] " >
@@ -362,22 +336,4 @@ export default function OTPLogin() {
       </div>
     </div>
   );
-  } catch (renderError) {
-    console.error("Error rendering OTP Login:", renderError);
-    const errorMessage = renderError?.message || renderError?.toString() || "An unknown rendering error occurred";
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Rendering Error</h2>
-          <p className="text-gray-600 mb-4">{errorMessage}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-          >
-            Reload Page
-          </button>
-        </div>
-      </div>
-    );
-  }
 }

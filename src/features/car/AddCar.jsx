@@ -163,8 +163,8 @@ export default function AddCar() {
     phoneNo: "",
   });
 
-  const [carTypes, setCarTypes] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [carTypes] = useState([]);
+  const [isLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [isAutoFillModalOpen, setIsAutoFillModalOpen] = useState(false);
   const { addCar, isAdding } = useAddCar();
@@ -190,7 +190,7 @@ export default function AddCar() {
     } catch {
       sessionStorage.removeItem("guestCarPrefill");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   const uniqueMakes = useMemo(
@@ -312,9 +312,6 @@ export default function AddCar() {
     }
 
     if (formData.isRegistered) {
-      const today = new Date();
-      const expiryDate = new Date(formData.expiryDate);
-
       // if (expiryDate <= today) {
       //   newErrors.expiryDate = "Expiry date must be after today";
       // }
@@ -396,7 +393,7 @@ export default function AddCar() {
     setIsAutoFillModalOpen(false);
   };
 
-  const renderDateField = (name, label, minDate) => (
+  const renderDateField = (name, label) => (
     <div>
       <label
         htmlFor={name}

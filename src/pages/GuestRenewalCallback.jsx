@@ -30,7 +30,7 @@ export default function GuestRenewalCallback() {
     JSON.parse(sessionStorage.getItem("guestBankDetails") || "null");
 
   const [status, setStatus] = useState("polling"); // polling | success | failed | error | expired
-  const [pollCount, setPollCount] = useState(0);
+  const [, setPollCount] = useState(0);
   const pollRef = useRef(null);
   const paymentRefRef = useRef(null); // cached from first status poll for MoniCredit active verify
 

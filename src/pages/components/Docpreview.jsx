@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 const driversLicense = drivers;
 
 function DocPreview({ selectedDocument, docType, setShowsidebar, car }) {
-  const [aspect, setAspect] = useState("portrait");
+  const [, setAspect] = useState("portrait");
   const [isSharing, setIsSharing] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
@@ -23,16 +23,11 @@ function DocPreview({ selectedDocument, docType, setShowsidebar, car }) {
   // Determine image and metadata
   const imageSrc = selectedDocument || (docType === "MyCar" ? Licensesample2 : driversLicense);
   const docTitle = docType === "MyCar" ? "Vehicle Document" : "Driver's License";
-  const expiryDate = car?.expiry_date || car?.expiryDate || "";
 
   const isPdfDocument = !!selectedDocument && (
     selectedDocument.startsWith?.('data:application/pdf') ||
     (typeof selectedDocument === 'string' && selectedDocument.toLowerCase().endsWith('.pdf'))
   );
-
-  const formattedExpiry = expiryDate 
-    ? new Date(expiryDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-    : "Not available";
 
   const isDataUrl = (value) => typeof value === 'string' && value.startsWith('data:');
 
@@ -141,7 +136,7 @@ function DocPreview({ selectedDocument, docType, setShowsidebar, car }) {
         try {
           await navigator.clipboard.writeText(selectedDocument);
           toast.success("Link copied to clipboard");
-        } catch (err) {
+        } catch {
           toast.error("Could not copy link");
         }
       } else {

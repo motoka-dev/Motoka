@@ -95,7 +95,6 @@ export default function GuestRenewalReceipt() {
   }
 
   const totalNaira = receipt.totalAmount / 100;
-  const renewalNaira = receipt.renewalAmount / 100;
   const deliveryNaira = receipt.deliveryFee / 100;
 
   return (

@@ -16,14 +16,14 @@ const AdminUserDetails = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [showAddCarModal, setShowAddCarModal] = useState(false);
 
-  const getToken = async () => {
+  const getToken = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate('/admin/login');
       return null;
     }
     return session.access_token;
-  };
+  }, [navigate]);
 
   const fetchUserDetails = useCallback(async () => {
     try {
@@ -59,7 +59,7 @@ const AdminUserDetails = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, getToken]);
 
   useEffect(() => {
     fetchUserDetails();
@@ -91,7 +91,7 @@ const AdminUserDetails = () => {
       } else {
         toast.error(data.message || 'Failed to suspend user');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to suspend user');
     } finally {
       setActionLoading(false);
@@ -122,7 +122,7 @@ const AdminUserDetails = () => {
       } else {
         toast.error(data.message || 'Failed to activate user');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to activate user');
     } finally {
       setActionLoading(false);
@@ -154,7 +154,7 @@ const AdminUserDetails = () => {
       } else {
         toast.error(data.message || 'Failed to delete user');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete user');
     } finally {
       setActionLoading(false);

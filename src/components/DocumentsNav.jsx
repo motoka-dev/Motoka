@@ -1,5 +1,4 @@
 function DocumentsNav({
-  activeTab = "MyCar",
   onMyCarClick,
   onDriverLicenseClick,
   docType,

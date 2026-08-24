@@ -19,7 +19,7 @@ const formatDate = (dateString) => {
 };
 
 export default function CarDetailsModal() {
-  const { isOpen, onConfirm, hideModal, carDetail } = useModalStore();
+  const { isOpen, hideModal, carDetail } = useModalStore();
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       hideModal();

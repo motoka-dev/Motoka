@@ -450,7 +450,7 @@ export default function AdminLadipo() {
     } else if (selectedOrder) {
       setBlockReasonDraft('');
     }
-  }, [selectedOrderNumber, selectedOrder?.order_number, selectedOrder?.block_reason]);
+  }, [selectedOrder]);
 
   useEffect(() => {
     setProductsPage(1);

@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronDown } from "lucide-react"
 import { useState } from "react"
 
 export default function FAQs({ onNavigate }) {
-  const [activeCategory, setActiveCategory] = useState("autocare") // account, licensing, autocare
   const [expandedQuestions, setExpandedQuestions] = useState({})
 
   const toggleQuestion = (id) => {

@@ -1,11 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { api } from "../services/apiClient";
+import React, { createContext, useState } from "react";
 
 const ReminderContext = createContext();
 
 export function ReminderProvider({ children }) {
-  const [reminders, setReminders] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [reminders] = useState([]);
+  const [loading] = useState(false);
 
   // useEffect(() => {
   //   async function fetchReminders() {
@@ -28,7 +27,3 @@ export function ReminderProvider({ children }) {
     </ReminderContext.Provider>
   );
 }
-
-export function useReminders() {
-  return useContext(ReminderContext);
-} 

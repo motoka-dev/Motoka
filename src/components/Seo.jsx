@@ -20,10 +20,11 @@ export default function Seo({
       <meta property="og:title" content={fullTitle} />
       {description ? <meta property="og:description" content={description} /> : null}
       <meta property="og:image" content={`${absoluteUrl("/icons/icon-512.png")}`} />
-  {jsonLd ? (
+      {jsonLd ? (
         <script type="application/ld+json">
           {JSON.stringify(
             Array.isArray(jsonLd)
+              // eslint-disable-next-line no-unused-vars -- destructuring used to strip @context
               ? { "@context": "https://schema.org", "@graph": jsonLd.map(({ "@context": _c, ...rest }) => rest) }
               : jsonLd,
           )}

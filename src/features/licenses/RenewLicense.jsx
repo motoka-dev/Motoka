@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useGetState, useGetLocalGovernment } from "./useRenew";
 import { useInitializePayment } from "./usePayment";
@@ -15,7 +15,7 @@ import { saveDeferredReminders } from "../../services/apiDeferredReminders";
 import { ClipLoader } from "react-spinners";
 import toast from "react-hot-toast";
 import { Icon } from "@iconify/react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as _motion } from "framer-motion";
 
 const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
@@ -29,7 +29,7 @@ export default function RenewLicense() {
   const navigate = useNavigate();
   const location = useLocation();
   const carDetail = location?.state?.carDetail;
-  const getCarReminder = (carId) => carDetail?.reminder || null;
+  const getCarReminder = () => carDetail?.reminder || null;
 
   // Payment data
   const [paymentHeads, setPaymentHeads] = useState([]);
@@ -184,7 +184,7 @@ export default function RenewLicense() {
     if (selectedSchedules.length > 0 && carDetail?.slug) {
       checkForExistingPayments();
     }
-  }, [selectedSchedules, carDetail?.slug]);
+  }, [selectedSchedules, carDetail?.slug, checkForExistingPayments]);
 
   // Format phone for display: 08012345678 → 080 1234 5678
   const formatPhoneDisplay = (raw) => {
@@ -198,7 +198,7 @@ export default function RenewLicense() {
     onDigits(digits);
   };
 
-  const checkForExistingPayments = async () => {
+  const checkForExistingPayments = useCallback(async () => {
     if (selectedSchedules.length === 0) return;
 
     setDuplicateCheckLoading(true);
@@ -213,7 +213,7 @@ export default function RenewLicense() {
     } finally {
       setDuplicateCheckLoading(false);
     }
-  };
+  }, [selectedSchedules, carDetail?.slug]);
 
   // Update lgaOptions when lgaData changes
   useEffect(() => {
@@ -256,7 +256,7 @@ export default function RenewLicense() {
     return hasValidSchedules;
   };
 
-  const getAvailableSchedules = () => {
+  const getAvailableSchedules = useCallback(() => {
     if (existingPayments.length === 0) return selectedSchedules;
 
     const existingPaymentHeadNames = existingPayments.map(
@@ -268,7 +268,7 @@ export default function RenewLicense() {
           schedule.payment_head?.payment_head_name,
         ),
     );
-  };
+  }, [existingPayments, selectedSchedules]);
 
   const handleDeliveryChange = (field, value) => {
     setDeliveryDetails((prev) => ({
@@ -335,21 +335,21 @@ export default function RenewLicense() {
   };
 
   // Helper function to get state_id and lga_id
-  const getStateId = () => {
+  const getStateId = useCallback(() => {
     if (!deliveryDetails.state || !isState) return null;
     const selectedState = isState.find(
       (s) => s.state_name === deliveryDetails.state,
     );
     return selectedState?.id || null;
-  };
+  }, [deliveryDetails.state, isState]);
 
-  const getLgaId = () => {
+  const getLgaId = useCallback(() => {
     if (!deliveryDetails.lg || !lgaOptions) return null;
     const selectedLga = lgaOptions.find(
       (l) => l.lga_name === deliveryDetails.lg,
     );
     return selectedLga?.id || null;
-  };
+  }, [deliveryDetails.lg, lgaOptions]);
 
   // Payment logic
   const handlePayNow = async () => {
@@ -415,7 +415,7 @@ export default function RenewLicense() {
         car_slug: carDetail.slug,
         reminders,
       });
-    } catch (error) {
+    } catch {
       toast.error("Could not save reminder preferences. Continuing to payment.");
     }
   };
@@ -443,7 +443,7 @@ export default function RenewLicense() {
   };
 
   // When Monicredit fails due to missing phone, user can switch to Paystack
-  const handlePayWithPaystack = () => {
+  const _handlePayWithPaystack = () => {
     if (!isFormValid()) return;
     const availableSchedules = getAvailableSchedules();
     if (availableSchedules.length === 0) return;
@@ -545,7 +545,7 @@ export default function RenewLicense() {
       try {
         const itemsRaw = inner.items;
         itemsArray = typeof itemsRaw === 'string' ? JSON.parse(itemsRaw) : (Array.isArray(itemsRaw) ? itemsRaw : []);
-      } catch (e) {
+      } catch {
         itemsArray = [];
       }
       normalized = {
@@ -592,7 +592,9 @@ export default function RenewLicense() {
     // Persist for PaymentOptions fallback
     try {
       sessionStorage.setItem("paymentData", JSON.stringify(completePaymentData));
-    } catch {}
+    } catch {
+      // sessionStorage unavailable — session simply won't survive refresh
+    }
 
     // Always route payments through the reusable payment page
     navigate(`/payment?type=${PAYMENT_TYPES.LICENSE_RENEWAL}`, {
@@ -604,6 +606,9 @@ export default function RenewLicense() {
     carDetail,
     selectedSchedules,
     deliveryDetails,
+    getAvailableSchedules,
+    getLgaId,
+    getStateId,
   ]);
 
   return (
@@ -822,7 +827,7 @@ export default function RenewLicense() {
               {/* Delivery Fields — only shown when checkbox is checked */}
               <AnimatePresence>
                 {wantsDelivery && (
-                  <motion.div
+                  <_motion.div
                     key="delivery-fields"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
@@ -831,7 +836,7 @@ export default function RenewLicense() {
                     className="overflow-hidden"
                   >
                     {/* Delivery Address */}
-                    <motion.div
+                    <_motion.div
                       className="mb-6"
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -849,9 +854,9 @@ export default function RenewLicense() {
                         className="mt-3 w-full rounded-[10px] bg-[#F4F5FC] p-4 text-sm text-[#05243F] transition-colors outline-none placeholder:text-[#05243F]/40 hover:bg-[#FFF4DD]/50 focus:bg-[#FFF4DD]"
                         placeholder="Enter delivery address"
                       />
-                    </motion.div>
+                    </_motion.div>
 
-                    <motion.div
+                    <_motion.div
                       className="mb-6 grid grid-cols-2 gap-4"
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -898,10 +903,10 @@ export default function RenewLicense() {
                           className="text-[#05243F] placeholder:text-[#05243F]/40"
                         />
                       </div>
-                    </motion.div>
+                    </_motion.div>
 
                     {/* Delivery Fee */}
-                    <motion.div
+                    <_motion.div
                       className="mb-6"
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -918,10 +923,10 @@ export default function RenewLicense() {
                         className="mt-3 w-full rounded-[10px] bg-[#F4F5FC] p-4 text-sm text-[#05243F] transition-colors outline-none placeholder:text-[#05243F]/40 hover:bg-[#FFF4DD]/50 focus:bg-[#FFF4DD]"
                         placeholder="Enter delivery fee"
                       />
-                    </motion.div>
+                    </_motion.div>
 
                     {/* Delivery Contact */}
-                    <motion.div
+                    <_motion.div
                       className="mb-6"
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -945,8 +950,8 @@ export default function RenewLicense() {
                           placeholder="080 1234 5678"
                         />
                       </div>
-                    </motion.div>
-                  </motion.div>
+                    </_motion.div>
+                  </_motion.div>
                 )}
               </AnimatePresence>
 

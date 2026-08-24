@@ -11,7 +11,7 @@ import config from "../../config/config";
 import Avarta from "../../assets/images/avarta.png";
 import Logo from "../../assets/images/Logo.png";
 
-export default function AdminLayout({ onNavigate }) {
+export default function AdminLayout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -66,7 +66,7 @@ export default function AdminLayout({ onNavigate }) {
               'Content-Type': 'application/json',
             },
           });
-        } catch (apiError) {
+        } catch {
           // Continue with logout even if API call fails
           console.log('Admin logout API call failed, continuing with local logout');
         }

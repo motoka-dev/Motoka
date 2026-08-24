@@ -4,7 +4,7 @@ import AuthSideHero from "../../components/AuthSideHero";
 import CarDetailsCard from "../../components/CarDetailsCard";
 import toast from "react-hot-toast";
 import { Icon } from "@iconify/react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as _motion } from "framer-motion";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { fetchRenewalItems, fetchStates, fetchLGAs, initGuestRenewal } from "../../services/apiGuest";
 import { saveGuestDeferredReminders } from "../../services/apiDeferredReminders";
@@ -94,7 +94,7 @@ export default function RenewModal({ isOpen, onClose, initialPlateNumber }) {
       .then(setStates)
       .catch(() => toast.error("Failed to load states"))
       .finally(() => setLoadingStates(false));
-  }, [wantsDelivery]);
+  }, [wantsDelivery, states.length]);
 
   // ── Load LGAs when a state is selected ───────────────────────────────────
   useEffect(() => {
@@ -157,7 +157,7 @@ export default function RenewModal({ isOpen, onClose, initialPlateNumber }) {
     });
   };
 
-  const handleToggleAllDocs = () => {
+  const _handleToggleAllDocs = () => {
     if (!renewalItems.length) return;
     if (selectAllDocs) {
       // Deselect all optional docs, keep required ones checked
@@ -231,7 +231,7 @@ export default function RenewModal({ isOpen, onClose, initialPlateNumber }) {
         plate_number: plateNumber.replace(/\s+/g, "").toUpperCase(),
         reminders,
       });
-    } catch (error) {
+    } catch {
       toast.error("Could not save reminder preferences. Continuing.");
     }
   };
@@ -334,7 +334,7 @@ export default function RenewModal({ isOpen, onClose, initialPlateNumber }) {
       >
         <AnimatePresence mode="wait">
           {step === 1 ? (
-            <motion.div
+            <_motion.div
               key="step1"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -474,10 +474,10 @@ export default function RenewModal({ isOpen, onClose, initialPlateNumber }) {
                   </form>
                 </div>
               </div>
-            </motion.div>
+            </_motion.div>
           ) : step === 3 ? (
             /* ── Step 3: Payment method selection ─────────────────────────── */
-            <motion.div
+            <_motion.div
               key="step3"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -592,9 +592,9 @@ export default function RenewModal({ isOpen, onClose, initialPlateNumber }) {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </_motion.div>
           ) : (
-            <motion.div
+            <_motion.div
               key="step2"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -751,7 +751,7 @@ export default function RenewModal({ isOpen, onClose, initialPlateNumber }) {
 
                     <AnimatePresence>
                       {wantsDelivery && (
-                        <motion.div
+                        <_motion.div
                           key="delivery-fields"
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
@@ -851,7 +851,7 @@ export default function RenewModal({ isOpen, onClose, initialPlateNumber }) {
                               />
                             </div>
                           </div>
-                        </motion.div>
+                        </_motion.div>
                       )}
                     </AnimatePresence>
 
@@ -865,7 +865,7 @@ export default function RenewModal({ isOpen, onClose, initialPlateNumber }) {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </_motion.div>
           )}
         </AnimatePresence>
       </div>

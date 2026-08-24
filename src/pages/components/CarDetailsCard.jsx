@@ -1,18 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Icon } from "@iconify/react";
-import MercedesLogo from "../../assets/images/mercedes-logo.png";
 import useModalStore from "../../store/modalStore";
-
-const defaultLogo = MercedesLogo;
-
-const formatDate = (dateString) => {
-  if (!dateString) return "-";
-  const date = new Date(dateString);
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-};
 
 // Helper function to determine status based on backend expiry_status
 const getExpiryStatusStyle = (expiryStatus) => {
@@ -74,7 +62,7 @@ export default function CarDetailsCard({
   selectedCarId,
 }) {
   // const [carLogo, setCarLogo] = useState(MercedesLogo);
-  const { showModal } = useModalStore();
+  useModalStore();
 
   const handleSelect = () => {
     if (onSelect) onSelect(carDetail);
@@ -121,9 +109,7 @@ export default function CarDetailsCard({
   
   // Extract data from expiry_status
   const reminderMessage = statusStyle.message;
-  const daysRemaining = expiryStatusData?.days_remaining;
-  const expiryStatus = expiryStatusData?.status; // "reminder", "overdue", or "no_reminder"
-  
+
   return (
     <div
       className={`cursor-pointer rounded-2xl px-4 py-5 ${selectedCarId === carDetail.id ? "bg-[#45A1F2]" : "bg-white"}`}

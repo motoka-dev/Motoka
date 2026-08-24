@@ -1,6 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  createDriverLicense as createDriverLicenseApi,
   getDriverLicenses as getDriverLicensesApi,
   getDriverLicenseById as getDriverLicenseByIdApi,
   updateDriverLicense as updateDriverLicenseApi,

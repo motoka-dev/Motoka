@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
 
-export default function VerifyTwoFactor({ onVerify, email, onClose, isVerifying }) {
+export default function VerifyTwoFactor({ onVerify, isVerifying }) {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [timeLeft, setTimeLeft] = useState(600); 
   const inputRefs = useRef([]);
@@ -66,7 +66,7 @@ export default function VerifyTwoFactor({ onVerify, email, onClose, isVerifying 
       } else {
         toast.error(data.message || "Failed to resend code");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to resend code");
     }
   };
@@ -80,8 +80,8 @@ export default function VerifyTwoFactor({ onVerify, email, onClose, isVerifying 
 
     try {
       await onVerify(fullCode);
-    } catch (error) {
-      
+    } catch {
+      // Error handling is owned by the parent component
     }
   };
 

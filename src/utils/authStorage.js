@@ -51,7 +51,7 @@ export const authStorage = {
         return false;
       }
       return true;
-    } catch (e) {
+    } catch {
       // If parsing fails, fall back to token presence
       return true;
     }

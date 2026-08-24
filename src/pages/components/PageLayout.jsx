@@ -4,7 +4,7 @@ import { IoIosArrowBack } from "react-icons/io";
 import { useState, useEffect } from "react";
 
 export default function PageLayout({ children, title, subTitle, bg = "bg-[#F9FAFC]" }) {
-    const [isMobile, setIsMobile] = useState(false)
+    const [, setIsMobile] = useState(false)
     const navigate = useNavigate();
   
     useEffect(() => {

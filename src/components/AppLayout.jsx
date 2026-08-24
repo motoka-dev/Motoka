@@ -4,7 +4,7 @@ import { FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { LogOut } from "lucide-react";
 import { Icon } from "@iconify/react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as _motion } from "framer-motion";
 import { logout } from "../services/apiAuth";
 
 import Logo2 from "../assets/images/Logo.svg";
@@ -268,7 +268,7 @@ export default function AppLayout() {
 
                   <AnimatePresence>
                     {isDropDownMenuOpen && (
-                      <motion.div
+                      <_motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -309,7 +309,7 @@ export default function AppLayout() {
                             <span className="font-medium">Logout</span>
                           </button>
                         </div>
-                      </motion.div>
+                      </_motion.div>
                     )}
                   </AnimatePresence>
                 </div>

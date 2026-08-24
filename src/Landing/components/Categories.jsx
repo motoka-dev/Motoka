@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as _motion } from "framer-motion";
 import category1 from "../../assets/images/landing/Group 1171279801.svg";
 import category3 from "../../assets/images/landing/Group 1171279802 (1).svg";
 import category4 from "../../assets/images/landing/Group 1171279802 (2).svg";
@@ -18,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 function Categories() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [cardWidth, setCardWidth] = useState(0);
   const sliderRef = useRef(null);
   const navigate=useNavigate()
   const CategoryData = [
@@ -91,7 +90,7 @@ function Categories() {
       setActiveIndex((prev) => (prev + 1) % CategoryData.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, [paused]);
+  }, [paused, CategoryData.length]);
 
   // 🔄 Helper to calculate translate position (33.33% for 3 cards)
   //   const getTranslateX = () => `-${activeIndex * 33.33}%`;
@@ -126,7 +125,7 @@ function Categories() {
         {/* Slider container */}
         {/* Desktop & Tablet View */}
         <div className="relative mt-5 mb-20 hidden sm:block">
-          <motion.div
+          <_motion.div
             ref={sliderRef}
             className="flex cursor-grab px-10 active:cursor-grabbing"
             drag="x"
@@ -151,12 +150,12 @@ function Categories() {
               // width: "555.146484375",
             }}
           >
-            {CategoryData.map((item, i) => (
-              <motion.div
+            {CategoryData.map((item) => (
+              <_motion.div
                 key={item.id}
                 className="w-[484px] flex-shrink-0 px-[10px] sm:w-[484px]"
               >
-                <motion.div
+                <_motion.div
                   className={`relative h-full rounded-[20px] p-10 pt-12 shadow-md transition-transform duration-300 ${item.id === 4 ? "text-white" : "text-[#05243F]"} ${activeIndex+1===item.id ? "scale-100" : "scale-96 opacity-80"}`}
                   style={{ backgroundColor: item.bgColor }}
                 >
@@ -186,10 +185,10 @@ function Categories() {
                       {item.button}
                     </button>
                   </div>
-                </motion.div>
-              </motion.div>
+                </_motion.div>
+              </_motion.div>
             ))}
-          </motion.div>
+          </_motion.div>
         </div>
         {/* Mobile View */}
         <div className="relative mt-10 block sm:hidden text-left">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   UserIcon,
@@ -31,9 +31,7 @@ const AgentView = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showNINImages, setShowNINImages] = useState({ front: false, back: false });
-  const [currentPage, setCurrentPage] = useState({ payments: 1, orders: 1 });
   const [activeTab, setActiveTab] = useState('overview');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -70,12 +68,6 @@ const AgentView = () => {
   const [selectedBank, setSelectedBank] = useState(null);
   const [isVerifyingAccount, setIsVerifyingAccount] = useState(false);
   const [accountVerified, setAccountVerified] = useState(false);
-
-  useEffect(() => {
-    fetchAgentDetails();
-    fetchStates();
-    fetchBanks();
-  }, [uuid]);
 
   // Debug: Log form state changes
   useEffect(() => {
@@ -123,7 +115,7 @@ const AgentView = () => {
     };
   }, []);
 
-  const fetchStates = async () => {
+  const fetchStates = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch(`${config.getApiBaseUrl()}/admin/states`, {
@@ -138,12 +130,12 @@ const AgentView = () => {
         setStates(data.data);
         setFilteredStates(data.data);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch states');
     }
-  };
+  }, []);
 
-  const fetchBanks = async () => {
+  const fetchBanks = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch(`${config.getApiBaseUrl()}/banks`, {
@@ -158,10 +150,10 @@ const AgentView = () => {
         setBanks(data.data);
         setFilteredBanks(data.data);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch banks');
     }
-  };
+  }, []);
 
   const handleStateSelect = (state) => {
     setSelectedState(state);
@@ -222,7 +214,7 @@ const AgentView = () => {
           duration: 4000,
         });
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to verify account');
       setAccountVerified(false);
     } finally {
@@ -289,7 +281,7 @@ const AgentView = () => {
     setShowEditModal(true);
   };
 
-  const fetchAgentDetails = async () => {
+  const fetchAgentDetails = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
@@ -335,13 +327,19 @@ const AgentView = () => {
         toast.error(data.message || 'Failed to fetch agent details');
         navigate('/admin/agents');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch agent details');
       navigate('/admin/agents');
     } finally {
       setLoading(false);
     }
-  };
+  }, [uuid, states, navigate]);
+
+  useEffect(() => {
+    fetchAgentDetails();
+    fetchStates();
+    fetchBanks();
+  }, [fetchAgentDetails, fetchStates, fetchBanks]);
 
   const handleStatusUpdate = async (newStatus) => {
     try {
@@ -359,11 +357,10 @@ const AgentView = () => {
       if (data.status) {
         setAgent(data.data);
         toast.success(data.message);
-        setShowStatusModal(false);
       } else {
         toast.error(data.message || 'Failed to update status');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to update status');
     }
   };
@@ -504,7 +501,7 @@ const AgentView = () => {
       } else {
         toast.error(data.message || 'Failed to update agent');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to update agent');
     } finally {
       setIsSubmitting(false);

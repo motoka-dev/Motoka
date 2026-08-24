@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { toast } from 'react-hot-toast';
@@ -19,25 +19,7 @@ const AdminUsers = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
 
-  const mapUser = (row) => ({
-    userId: row.user_id || row.id,
-    id: row.id,
-    name: row.first_name && row.last_name ? `${row.first_name} ${row.last_name}`.trim() : row.full_name || row.name || row.email || 'N/A',
-    email: row.email || 'N/A',
-    phone: row.phone_number || row.phone || '',
-    is_suspended: row.is_suspended || false,
-    deleted_at: row.deleted_at || null,
-    created_at: row.created_at,
-    cars_count: row.cars_count || 0,
-    plates: row.plates || [],
-    orders_count: row.orders_count || 0,
-  });
-
-  useEffect(() => {
-    fetchUsers();
-  }, [currentPage, searchTerm, statusFilter, sortFilter]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
@@ -79,7 +61,11 @@ const AdminUsers = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, statusFilter, sortFilter, navigate]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleViewUser = (userId) => {
     navigate(`/admin/users/${userId}`);

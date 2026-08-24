@@ -179,7 +179,7 @@ const StepTwo = ({ nextStep, prevStep, email, setToken }) => {
   );
 };
 
-const StepThree = ({ prevStep, email, token }) => {
+const StepThree = ({ email, token }) => {
   const navigate = useNavigate();
   const { resetPasswordAsync, isResetingPassword } = useResetPassword();
   const [password, setPassword] = useState("");

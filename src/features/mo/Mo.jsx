@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as _motion } from "framer-motion";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
 import { useGetCars } from "../car/useCar";
@@ -136,7 +136,7 @@ export default function Mo() {
         id: Date.now(),
       },
     ]);
-  }, [open]);
+  }, [open, userName]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -248,7 +248,7 @@ export default function Mo() {
       {/* Floating button */}
       <AnimatePresence>
         {!open && (
-          <motion.button
+          <_motion.button
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
@@ -258,14 +258,14 @@ export default function Mo() {
           >
             <Icon icon="solar:stars-bold" fontSize={18} />
             <span className="text-sm font-semibold">Ask Mo</span>
-          </motion.button>
+          </_motion.button>
         )}
       </AnimatePresence>
 
       {/* Chat panel */}
       <AnimatePresence>
         {open && (
-          <motion.div
+          <_motion.div
             initial={{ opacity: 0, y: 30, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.96 }}
@@ -366,7 +366,7 @@ export default function Mo() {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </_motion.div>
         )}
       </AnimatePresence>
     </>

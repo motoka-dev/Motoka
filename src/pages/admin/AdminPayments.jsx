@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   CreditCardIcon,
   ArrowUpIcon,
@@ -47,17 +47,7 @@ const AdminPayments = () => {
     { value: 'abandoned', label: 'Abandoned', color: 'gray' },
   ];
 
-  useEffect(() => {
-    // Check if admin is authenticated
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
-    fetchTransactions();
-  }, [activeFilter, activeGateway, includeDuplicates, currentPage, searchTerm]);
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
@@ -94,7 +84,17 @@ const AdminPayments = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeFilter, activeGateway, includeDuplicates, currentPage, searchTerm]);
+
+  useEffect(() => {
+    // Check if admin is authenticated
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      window.location.href = '/admin/login';
+      return;
+    }
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-NG', {

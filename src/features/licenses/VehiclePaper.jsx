@@ -3,7 +3,6 @@ import React from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
-import toast from "react-hot-toast";
 
 import LicenseLayout from "./components/LicenseLayout";
 
@@ -115,7 +114,7 @@ export default function VehiclePaper() {
     >
       {/* License Options */}
       <div className="mt-5 flex flex-col justify-center gap-4 sm:flex-row">
-        {documentTypes.map((type, index) => (
+        {documentTypes.map((type) => (
           <button
             key={type.title}
             onClick={() => handleLicenseSelect(type)}

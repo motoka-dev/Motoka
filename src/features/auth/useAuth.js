@@ -27,9 +27,6 @@ export function useLogin() {
       onSuccess: (data) => {
         toast.dismiss();
 
-        if (data.authorization?.token) {
-        }
-
         queryClient.setQueryData(["user"], data.user);
         toast.success(data.message || "Login successful!");
 

@@ -1,16 +1,15 @@
 import React from "react";
 import Header from "./Header";
-import { useState, useEffect, useRef } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { LogOut } from "lucide-react";
 import { Icon } from "@iconify/react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { logout } from "../services/apiAuth";
 
 import Logo2 from "../assets/images/Logo.svg";
-import { useNotifications } from "../features/notifications/useNotification";
 import RecentNotificationModal from "./RecentNotification.jsx";
 import Footer from "../Landing/components/Footer.jsx";
 const navLinks = [
@@ -24,8 +23,16 @@ const navLinks = [
 export default function BlogLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const location = useLocation();
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/auth/login");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to log out");
+    }
+  };
 
 
 
@@ -73,7 +80,6 @@ export default function BlogLayout() {
             {/* Desktop Navigation */}
             <nav className="hidden space-x-6 md:flex">
               {navLinks.map((link) => {
-                const isActive = location.pathname.startsWith(link.path);
                 return (
                   <Link
                     key={link.path}
@@ -123,7 +129,6 @@ export default function BlogLayout() {
           <div className="flex-1 overflow-y-auto px-4 py-6">
             <nav className="flex flex-col space-y-2">
               {navLinks.map((link) => {
-                const isActive = location.pathname.startsWith(link.path);
                 return (
                   <Link
                     key={link.path}
@@ -139,9 +144,9 @@ export default function BlogLayout() {
               <button
                 className="mt-2 flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-[#A73957] hover:bg-[#F4F5FC]"
                 onClick={() => {
-                  setIsModalOpen(true);
                   setIsMenuOpen(false);
                   document.body.style.overflow = "";
+                  handleLogout();
                 }}
               >
                 <div className=" items-center gap-4 w-full">

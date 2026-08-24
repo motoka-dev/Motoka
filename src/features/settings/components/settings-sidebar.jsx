@@ -14,7 +14,7 @@ export default function SettingsSidebar({ activePage, expandedSection, onNavigat
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      const response = await logout();
+      const _response = await logout();
       
       onNavigate("login");
     } catch (error) {

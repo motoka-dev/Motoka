@@ -8,8 +8,8 @@ import toast from "react-hot-toast";
 
 export default function TwoFactorAuth({ onNavigate }) {
   const [selectedMethod, setSelectedMethod] = useState("email"); 
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [, setErrorMessage] = useState("");
+  const [, setSuccessMessage] = useState("");
   const [showVerification, setShowVerification] = useState(false);
   const [email] = useState(localStorage.getItem('userEmail')); 
   const [isVerifying, setIsVerifying] = useState(false);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ClipboardDocumentListIcon,
   MagnifyingGlassIcon,
@@ -42,17 +42,7 @@ const AdminOrders = () => {
   const [totalOrders, setTotalOrders] = useState(0);
   const [perPage, setPerPage] = useState(15);
 
-  useEffect(() => {
-    // Check if admin is authenticated
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
-    fetchOrders();
-  }, [activeFilter, currentPage]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
@@ -83,12 +73,22 @@ const AdminOrders = () => {
       } else {
         toast.error('Failed to fetch orders');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch orders');
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeFilter, currentPage, perPage]);
+
+  useEffect(() => {
+    // Check if admin is authenticated
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      window.location.href = '/admin/login';
+      return;
+    }
+    fetchOrders();
+  }, [fetchOrders]);
 
   // Build a human-readable purpose label from order_type + plate/license specifics
   const getPurpose = (order) => {

@@ -16,7 +16,7 @@ export default function SettingsLayout({
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     const checkIfMobile = () => {

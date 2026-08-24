@@ -34,7 +34,7 @@ const AdminAgents = () => {
       if (data.status) {
         setAgents(data.data.data || []);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch agents');
     } finally {
       setLoading(false);
@@ -75,7 +75,7 @@ const AdminAgents = () => {
         });
         setAgentPayments(paymentsByAgent);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch agent payments');
     }
   };

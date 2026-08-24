@@ -52,8 +52,8 @@ const CreateAgent = () => {
   const testApiConnection = async () => {
     try {
       const response = await fetch(`${config.getApiBaseUrl()}/test-cors`);
-      const data = await response.json();
-    } catch (error) {
+      const _data = await response.json();
+    } catch {
       toast.error('API connection test failed');
     }
   };
@@ -114,7 +114,7 @@ const CreateAgent = () => {
         setStates(data.data);
         setFilteredStates(data.data);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch states');
     }
   };
@@ -134,7 +134,7 @@ const CreateAgent = () => {
         setBanks(data.data);
         setFilteredBanks(data.data);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch banks');
     }
   };
@@ -194,7 +194,7 @@ const CreateAgent = () => {
           duration: 4000,
         });
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to verify account');
       setAccountVerified(false);
       // Show info that bank details are still saved
@@ -263,9 +263,10 @@ const CreateAgent = () => {
         }
         
         if (!testResponse.ok) {
-          const errorText = await testResponse.text();
+          // Non-401 failures are ignored; field validation below handles UX
         }
-      } catch (error) {
+      } catch {
+        // Network probe failures are ignored; validation continues below
       }
 
       // Validate required fields
@@ -294,7 +295,7 @@ const CreateAgent = () => {
           toast.error(`An agent already exists for ${selectedState.name} state. Please select a different state.`);
           return;
         }
-      } catch (error) {
+      } catch {
         // Continue with creation if check fails (backend will handle validation)
         console.log('State check failed, continuing with backend validation');
       }

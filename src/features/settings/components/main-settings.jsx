@@ -16,7 +16,7 @@ import { useProfile } from "../hooks/useProfile";
 import Avatar from "./ui/avatar";
 import { Icon } from "@iconify/react";
 import love from "../../../assets/images/setting/love-icon.png";
-export default function MainSettings({ onNavigate }) {
+export default function MainSettings() {
   const { loading, error, profileData, fetchProfile } = useProfile();
 
   const [fetchInitiated, setFetchInitiated] = useState(false);
@@ -38,11 +38,7 @@ export default function MainSettings({ onNavigate }) {
       await fetchProfile(true);
     };
     refreshData();
-  }, []);
-
-  const handleEditClick = () => {
-    onNavigate("edit-profile");
-  };
+  }, [fetchProfile]);
 
   if (loading && !profileData) {
     return (

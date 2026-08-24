@@ -10,8 +10,6 @@ function CartPage() {
   const totalKobo = useCartStore(selectTotalKobo);
   const navigate = useNavigate();
 
-  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
-
   return (
     <LadipoLayout title="Cart" backPath="/ladipo">
 

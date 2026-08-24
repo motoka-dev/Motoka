@@ -80,7 +80,7 @@ export async function updateDriverLicense(id, formData) {
   return data;
 }
 
-export async function deleteDriverLicense(id) {
+export async function deleteDriverLicense() {
   // Backend doesn't support delete, return error or no-op
   throw new Error("Delete operation not supported for driver license applications");
 } 

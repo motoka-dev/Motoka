@@ -7,7 +7,7 @@ import { useOAuthCallback } from "./useOAuth";
 export default function OAuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { handleCallback, isHandlingCallback } = useOAuthCallback();
+  const { handleCallback } = useOAuthCallback();
 
   useEffect(() => {
     const processCallback = async () => {

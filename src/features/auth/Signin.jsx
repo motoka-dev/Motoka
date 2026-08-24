@@ -440,13 +440,13 @@ export default function Signin() {
   const handleVerifyTwoFactor = async (code) => {
     try {
       await verifyTwoFactor(code);
-    } catch (error) {
+    } catch {
       // Error handling is done in the mutation
     }
   };
 
   // OTP passwordless login flow
-  const handleSendOtp = async () => {
+  const _handleSendOtp = async () => {
     const email = getValues("email");
     if (!email) {
       toast.error("Please enter your email to receive OTP");

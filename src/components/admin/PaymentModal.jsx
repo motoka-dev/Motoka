@@ -51,7 +51,7 @@ const PaymentModal = ({ isOpen, onClose, order, agent, onPaymentInitiated }) => 
       } else {
         toast.error(data.message || 'Failed to initiate payment');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to initiate payment. Please try again.');
     } finally {
       setIsProcessing(false);
