@@ -35,8 +35,8 @@ const quickActions = [
       />
     ),
     title: "FAQs/How can\nwe Help?",
-    // link: "/help",
-    // comingSoon: true,
+    link: "/settings",
+    state: { settingsPage: "faqs" },
   },
   {
     icon: <Icon icon="mdi:car-pickup" fontSize={30} color="#2389E3" />,
@@ -82,6 +82,7 @@ export default function QuickActions() {
           <Link
             key={index}
             to={action.link}
+            state={action.state}
             className="group relative flex h-[161px] flex-col justify-between rounded-3xl border-2 border-transparent bg-white px-2 py-6 will-change-transform hover:border-2 hover:border-[#45A1F2] hover:shadow-lg sm:px-4"
             style={{ transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)" }}
           >

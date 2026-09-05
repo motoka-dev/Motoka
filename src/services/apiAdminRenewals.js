@@ -11,9 +11,10 @@ async function handle(res) {
   return data;
 }
 
-/** GET /admin/renewals — call list for one urgency bucket, plus counts for all */
-export async function listRenewals({ bucket = 'expired', page = 1, limit = 25, search } = {}) {
+/** GET /admin/renewals — call list for one urgency bucket or calendar month, plus counts for all */
+export async function listRenewals({ bucket = 'expired', month, page = 1, limit = 25, search } = {}) {
   const params = new URLSearchParams({ bucket, page, limit });
+  if (month) params.set('month', month);
   if (search) params.set('search', search);
   const res = await fetch(`${config.getApiBaseUrl()}/admin/renewals?${params}`, { headers: adminHeaders() });
   const json = await handle(res);
